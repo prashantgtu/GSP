@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Goal Stack Planning - Prashant Kushwaha</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+:root{--ink:#1f2937;--mute:#5b6472;--line:#e5e7eb;--or:#ea580c;--or-l:#fff0e5;--bl:#1d4ed8;--bl-l:#e8efff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0;background:#fff;color:var(--ink);font-family:'Source Sans 3',system-ui,sans-serif;overflow:hidden;color-scheme:light}
+*{box-sizing:border-box}
+.slide{position:absolute;inset:0 0 56px 0;padding:5vh 7vw 3vh 9vw;display:flex;flex-direction:column;justify-content:center;
+opacity:0;visibility:hidden;transform:translateX(40px);transition:opacity .5s,transform .5s,visibility 0s .5s;overflow-y:auto;overflow-x:hidden}
+.slide.on{opacity:1;visibility:visible;transform:none;transition:opacity .5s,transform .5s}
+.slide::before{content:"";position:fixed;left:0;top:0;bottom:56px;width:14px;background:var(--c);transform:scaleY(0);transform-origin:top;transition:transform .8s ease .1s}
+.slide.on::before{transform:scaleY(1)}
+.or{--c:var(--or);--cl:var(--or-l)}.bl{--c:var(--bl);--cl:var(--bl-l)}
+.wrap{max-width:1040px;width:100%}
+h1,h2{font-family:'Bricolage Grotesque',Georgia,sans-serif;margin:0 0 .6em;line-height:1.05;letter-spacing:-.02em}
+h1{font-size:clamp(2.6rem,8vw,5.6rem);color:var(--c)}
+h2{font-size:clamp(1.8rem,4.2vw,3rem);color:var(--c)}
+h3{font-family:'Bricolage Grotesque',sans-serif;font-size:1.15rem;margin:0 0 .3em;color:var(--c)}
+p,li{font-size:clamp(1rem,1.9vw,1.3rem);line-height:1.5;margin:0 0 .6em}
+.sub{color:var(--mute);font-size:clamp(1rem,2vw,1.35rem)}
+.who{margin-top:2.2em;padding-left:14px;border-left:4px solid var(--or);font-size:clamp(1.1rem,2.2vw,1.5rem)}
+.who b{font-family:'Bricolage Grotesque',sans-serif;font-size:1.3em;display:block}
+code,.p{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88em;background:var(--cl);padding:1px 6px;border-radius:3px;white-space:nowrap}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2rem}
+.rule{border-top:3px solid var(--c);padding-top:.7rem}
+.rule.o{border-color:var(--or)}.rule.o h3{color:var(--or)}
+.rule.b{border-color:var(--bl)}.rule.b h3{color:var(--bl)}
+.rule p,.rule li{font-size:clamp(.95rem,1.7vw,1.15rem)}
+ul{padding-left:1.1em;margin:0}
+table{border-collapse:collapse;width:100%;font-size:clamp(.8rem,1.55vw,1.05rem)}
+th{text-align:left;color:var(--c);border-bottom:3px solid var(--c);padding:.5em .6em;font-family:'Bricolage Grotesque',sans-serif}
+td{padding:.55em .6em;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child{font-weight:600}
+.scroll{overflow-x:auto}
+.rows>div{display:grid;grid-template-columns:minmax(120px,210px) 1fr;gap:1.2rem;padding:.7em 0;border-bottom:1px solid var(--line)}
+.rows b{font-family:'Bricolage Grotesque',sans-serif;color:var(--c);font-size:1.1rem}
+.rows span{font-size:clamp(.95rem,1.8vw,1.2rem);line-height:1.45}
+/* blocks world */
+.bw{display:flex;gap:10px;align-items:flex-end;height:96px;border-bottom:3px solid var(--ink);padding:0 8px;min-width:130px}
+.col{display:flex;flex-direction:column-reverse;gap:2px}
+.b{width:34px;height:34px;display:grid;place-items:center;font-weight:700;color:#fff;border-radius:3px;font-family:'Bricolage Grotesque',sans-serif}
+.b.o{background:var(--or)}.b.u{background:var(--bl)}
+.pair{display:flex;gap:1.4rem;align-items:flex-end;flex-wrap:wrap;margin-bottom:1rem}
+.pair small{display:block;color:var(--mute);margin-bottom:6px;font-size:.9rem}
+.mid{font-size:1.6rem;color:var(--mute);padding-bottom:30px}
+/* steps */
+.frag{opacity:0;transform:translateX(-14px);transition:opacity .45s,transform .45s}
+.frag.show{opacity:1;transform:none}
+.tr{display:grid;grid-template-columns:2rem 1fr;gap:.6rem;padding:.5em 0;border-bottom:1px solid var(--line)}
+.tr i{font-style:normal;font-family:'Bricolage Grotesque',sans-serif;font-weight:700;color:var(--c)}
+.tr span{font-size:clamp(.88rem,1.55vw,1.05rem);line-height:1.4}
+.plan{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:.9rem}
+.chip{background:var(--c);color:#fff;padding:5px 10px;border-radius:3px;font-size:clamp(.78rem,1.4vw,.95rem);font-family:ui-monospace,Menlo,monospace;opacity:0}
+.frag.show .chip{animation:pop .4s cubic-bezier(.3,1.5,.5,1) forwards;animation-delay:calc(var(--i)*.18s)}
+.plan em{color:var(--mute);font-style:normal}
+@keyframes pop{from{opacity:0;transform:scale(.6) translateY(10px)}to{opacity:1;transform:none}}
+.split{display:grid;grid-template-columns:minmax(0,300px) 1fr;gap:2.2rem;align-items:start}
+@media(max-width:820px){.split{grid-template-columns:1fr}.rows>div{grid-template-columns:1fr;gap:.2rem}.hero-stack{display:none!important}}
+/* title stack */
+.hero-stack{position:absolute;right:9vw;bottom:14vh;display:flex;flex-direction:column-reverse;gap:6px}
+.hero-stack .b{width:clamp(70px,9vw,120px);height:clamp(44px,6vw,74px);font-size:1.4rem;opacity:0;transform:translateY(-260px)}
+.on .hero-stack .b{animation:drop .7s cubic-bezier(.3,1.3,.5,1) forwards;animation-delay:calc(.5s + var(--i)*.35s)}
+@keyframes drop{0%{opacity:0;transform:translateY(-260px)}30%{opacity:1}100%{opacity:1;transform:none}}
+/* chrome */
+#bar{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px));height:56px;display:flex;align-items:center;gap:12px;padding:0 5vw 0 9vw;background:#fff;border-top:1px solid var(--line);z-index:5}
+#bar .info{flex:1;color:var(--mute);font-size:.9rem}
+#bar button{font:600 .95rem 'Source Sans 3',sans-serif;border:1.5px solid var(--c,var(--bl));background:#fff;color:var(--c,var(--bl));padding:7px 16px;border-radius:4px;cursor:pointer}
+#bar button:hover{background:var(--c,var(--bl));color:#fff}
+#bar button:focus-visible{outline:3px solid var(--or);outline-offset:2px}
+#prog{position:fixed;left:0;bottom:calc(56px + env(safe-area-inset-bottom,0px));height:4px;background:var(--c,var(--bl));width:0;transition:width .5s,background .5s;z-index:6}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+
+<!-- 1 Title -->
+<section class="slide bl">
+  <div class="wrap">
+    <h1>Goal Stack<br>Planning</h1>
+    <p class="sub">Chapter 4: Planning<br>Introduction to Artificial Intelligence (3171105), Semester 7</p>
+    <div class="who">Presented by<b>Prashant Kushwaha</b></div>
+  </div>
+  <div class="hero-stack" aria-hidden="true">
+    <div class="b u" style="--i:0">ON(A,B)</div>
+    <div class="b o" style="--i:1">HOLD(A)</div>
+    <div class="b u" style="--i:2">CLEAR(B)</div>
+    <div class="b o" style="--i:3">ARMEMPTY</div>
+  </div>
+</section>
+
+<!-- 2 Concept -->
+<section class="slide or">
+  <div class="wrap">
+    <h2>Planning by keeping a stack of things to do</h2>
+    <p>A plan is a sequence of actions that takes the world from an initial state to a goal state. Goal stack planning, used in the STRIPS planner, builds that sequence by working on one goal at a time: it always looks at whatever is on top of a stack.</p>
+    <div class="cols" style="margin-top:1.4rem">
+      <div class="rule o"><h3>The world state</h3><p>A list of true facts such as <code>ON(B,A)</code> and <code>ARMEMPTY</code>. Every operator changes this list.</p></div>
+      <div class="rule b"><h3>The goal stack</h3><p>Holds goals and operators. The planner pops the top item and either solves it, breaks it up, or applies it.</p></div>
+      <div class="rule o"><h3>The plan</h3><p>The operators actually applied, in order. When the stack is empty, this list is the answer.</p></div>
+    </div>
+    <p class="sub" style="margin-top:1rem">Because subgoals are solved one after another, this is a linear planner.</p>
+  </div>
+</section>
+
+<!-- 3 Operators -->
+<section class="slide bl">
+  <div class="wrap">
+    <h2>The blocks world and its four operators</h2>
+    <p>Facts used: <span class="p">ON(x,y)</span> <span class="p">ONTABLE(x)</span> <span class="p">CLEAR(x)</span> <span class="p">HOLDING(x)</span> <span class="p">ARMEMPTY</span></p>
+    <div class="scroll"><table>
+      <tr><th>Operator</th><th>Precondition</th><th>Delete list</th><th>Add list</th></tr>
+      <tr><td>STACK(x,y)</td><td>CLEAR(y) ∧ HOLDING(x)</td><td>CLEAR(y), HOLDING(x)</td><td>ARMEMPTY, ON(x,y)</td></tr>
+      <tr><td>UNSTACK(x,y)</td><td>ON(x,y) ∧ CLEAR(x) ∧ ARMEMPTY</td><td>ON(x,y), ARMEMPTY</td><td>HOLDING(x), CLEAR(y)</td></tr>
+      <tr><td>PICKUP(x)</td><td>ONTABLE(x) ∧ CLEAR(x) ∧ ARMEMPTY</td><td>ONTABLE(x), ARMEMPTY</td><td>HOLDING(x)</td></tr>
+      <tr><td>PUTDOWN(x)</td><td>HOLDING(x)</td><td>HOLDING(x)</td><td>ONTABLE(x), ARMEMPTY</td></tr>
+    </table></div>
+    <p class="sub" style="margin-top:.9rem">An operator can only run when its precondition holds. After it runs, remove the delete list from the state and add the add list.</p>
+  </div>
+</section>
+
+<!-- 4 Algorithm -->
+<section class="slide or">
+  <div class="wrap">
+    <h2>What the planner does with the top of the stack</h2>
+    <p>Start by pushing the goal. Repeat until the stack is empty:</p>
+    <div class="rows">
+      <div><b>Compound goal</b><span>Push it back, then push each of its parts above it in any order. It is checked again once its parts are done.</span></div>
+      <div><b>Single goal, already true</b><span>Pop it and move on.</span></div>
+      <div><b>Single goal, not true</b><span>Replace it with an operator whose add list contains it, then push that operator's preconditions above the operator.</span></div>
+      <div><b>Operator</b><span>Pop it, update the state with its delete and add lists, and append it to the plan.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 Example -->
+<section class="slide bl">
+  <div class="wrap">
+    <h2>Worked example</h2>
+    <div class="split">
+      <div>
+        <div class="pair">
+          <div><small>Start</small><div class="bw"><div class="col"><div class="b u">A</div><div class="b o">B</div></div><div class="col"><div class="b o">C</div></div><div class="col"><div class="b u">D</div></div></div></div>
+        </div>
+        <div class="pair">
+          <div><small>Goal</small><div class="bw"><div class="col"><div class="b u">A</div><div class="b o">C</div></div><div class="col"><div class="b u">D</div><div class="b o">B</div></div></div></div>
+        </div>
+        <p style="font-size:.95rem;color:var(--mute)">Goal: <code>ON(C,A) ∧ ON(B,D) ∧ ARMEMPTY</code></p>
+        <p style="font-size:.85rem;color:var(--mute)">Press Next to step through the stack.</p>
+      </div>
+      <div>
+        <div class="tr frag"><i>1</i><span>Push the goal and its parts. Top is <code>ON(C,A)</code>, so plan <code>STACK(C,A)</code>, which needs <code>CLEAR(A)</code> and <code>HOLDING(C)</code>.</span></div>
+        <div class="tr frag"><i>2</i><span><code>CLEAR(A)</code> is false because B is on A. Use <code>UNSTACK(B,A)</code>. Its preconditions hold, so apply it. The arm now holds B.</span></div>
+        <div class="tr frag"><i>3</i><span><code>HOLDING(C)</code> needs <code>PICKUP(C)</code>, which needs <code>ARMEMPTY</code>. The arm is full, so apply <code>PUTDOWN(B)</code>, then <code>PICKUP(C)</code>.</span></div>
+        <div class="tr frag"><i>4</i><span>Both preconditions of <code>STACK(C,A)</code> are true, so apply it. <code>ON(C,A)</code> is done.</span></div>
+        <div class="tr frag"><i>5</i><span>Next part, <code>ON(B,D)</code>: apply <code>PICKUP(B)</code> and then <code>STACK(B,D)</code>. The compound goal is now satisfied and the stack is empty.</span></div>
+        <div class="frag">
+          <div class="plan"><b>Plan</b>
+            <span class="chip" style="--i:0">UNSTACK(B,A)</span><em>then</em><span class="chip" style="--i:1">PUTDOWN(B)</span><em>then</em><span class="chip" style="--i:2">PICKUP(C)</span><em>then</em><span class="chip" style="--i:3">STACK(C,A)</span><em>then</em><span class="chip" style="--i:4">PICKUP(B)</span><em>then</em><span class="chip" style="--i:5">STACK(B,D)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 Limits -->
+<section class="slide or">
+  <div class="wrap">
+    <h2>Where goal stack planning falls short</h2>
+    <div class="cols">
+      <div class="rule b"><h3>What works</h3>
+        <ul><li>Simple to implement and easy to trace by hand.</li><li>Every operator in the plan is there because a goal needed it.</li><li>Works well when subgoals do not interfere.</li></ul>
+      </div>
+      <div class="rule o"><h3>Plans may be longer than needed</h3>
+        <p>The plan above has 6 steps. Stacking B on D straight after unstacking it gives 4: <code>UNSTACK(B,A)</code>, <code>STACK(B,D)</code>, <code>PICKUP(C)</code>, <code>STACK(C,A)</code>.</p>
+      </div>
+      <div class="rule o"><h3>Sussman anomaly</h3>
+        <div class="pair" style="margin:.4rem 0">
+          <div><small>Start</small><div class="bw" style="height:80px"><div class="col"><div class="b u">A</div><div class="b o">C</div></div><div class="col"><div class="b o">B</div></div></div></div>
+          <div><small>Goal</small><div class="bw" style="height:110px"><div class="col"><div class="b o">C</div><div class="b u">B</div><div class="b o">A</div></div></div></div>
+        </div>
+        <p>Goal: <code>ON(A,B) ∧ ON(B,C)</code>. Whichever goal is done first, finishing the other undoes it.</p>
+      </div>
+    </div>
+    <p class="sub" style="margin-top:1rem">The fix is to interleave subgoals instead of finishing them one at a time. That leads to plan space and hierarchical planning, the next topics in this chapter.</p>
+  </div>
+</section>
+
+<!-- 7 Summary -->
+<section class="slide bl">
+  <div class="wrap">
+    <h2>Summary and references</h2>
+    <div class="cols">
+      <div class="rule b"><h3>Takeaways</h3>
+        <ul><li>One stack holds goals and operators; the top item decides the next move.</li><li>Unsatisfied goals become operators plus their preconditions.</li><li>Applied operators form the plan.</li><li>Linear ordering causes goal interaction problems such as the Sussman anomaly.</li></ul>
+      </div>
+      <div class="rule o"><h3>References</h3>
+        <ul>
+          <li>Elaine Rich and Kevin Knight, <i>Artificial Intelligence</i>, McGraw-Hill</li>
+          <li>Deepak Khemani, <i>A First Course in Artificial Intelligence</i>, McGraw-Hill</li>
+          <li>Russell and Norvig, <i>Artificial Intelligence: A Modern Approach</i>, 2nd ed., Prentice-Hall, 2003</li>
+          <li>Barr and Feigenbaum, <i>Handbook of Artificial Intelligence</i>, Stanford University</li>
+          <li>Online: Wikipedia articles on STRIPS and the Sussman anomaly</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:1.4rem"><b style="font-family:'Bricolage Grotesque',sans-serif">Thank you.</b> Prashant Kushwaha</p>
+  </div>
+</section>
+
+<div id="prog"></div>
+<div id="bar">
+  <button id="pv" aria-label="Previous">Back</button>
+  <div class="info" id="info"></div>
+  <button id="nx" aria-label="Next">Next</button>
+</div>
+
+<script>
+(function(){
+  var S=[].slice.call(document.querySelectorAll('.slide')),i=0,root=document.documentElement;
+  function fr(s){return [].slice.call(s.querySelectorAll('.frag'))}
+  function color(s){return s.classList.contains('or')?'var(--or)':'var(--bl)'}
+  function show(n){
+    i=Math.max(0,Math.min(S.length-1,n));
+    S.forEach(function(s,k){s.classList.toggle('on',k===i)});
+    var c=color(S[i]);root.style.setProperty('--c',c);
+    document.getElementById('prog').style.width=((i+1)/S.length*100)+'%';
+    document.getElementById('info').textContent='Slide '+(i+1)+' of '+S.length+'  |  Goal Stack Planning';
+    S[i].scrollTop=0;
+  }
+  function next(){
+    var f=fr(S[i]).filter(function(e){return !e.classList.contains('show')});
+    if(f.length){f[0].classList.add('show');return}
+    if(i<S.length-1)show(i+1);
+  }
+  function prev(){
+    var f=fr(S[i]).filter(function(e){return e.classList.contains('show')});
+    if(f.length){f[f.length-1].classList.remove('show');return}
+    if(i>0){show(i-1);fr(S[i]).forEach(function(e){e.classList.add('show')})}
+  }
+  document.getElementById('nx').onclick=next;
+  document.getElementById('pv').onclick=prev;
+  document.addEventListener('keydown',function(e){
+    if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].indexOf(e.key)>-1){e.preventDefault();next()}
+    else if(['ArrowLeft','ArrowUp','PageUp'].indexOf(e.key)>-1){e.preventDefault();prev()}
+    else if(e.key==='Home')show(0);else if(e.key==='End')show(S.length-1);
+  });
+  var x0=null;
+  document.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(x0===null)return;var d=e.changedTouches[0].clientX-x0;x0=null;
+    if(d<-50)next();else if(d>50)prev();
+  });
+  show(0);
+})();
+</script>
+</body>
+</html>
